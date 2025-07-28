@@ -1,0 +1,287 @@
+{
+  "products": [
+    {
+      "id": 1,
+      "category": "soups",
+      "name": "Lentil Soup",
+      "price": 0.005,
+      "unit": "g"
+    },
+    {
+      "id": 2,
+      "category": "soups",
+      "name": "Chicken Soup",
+      "price": 0.005,
+      "unit": "g"
+    },
+    {
+      "id": 3,
+      "category": "grilled_meats_proteins",
+      "name": "Chicken Shish",
+      "price": 5,
+      "unit": "skewer"
+    },
+    {
+      "id": 4,
+      "category": "grilled_meats_proteins",
+      "name": "Veal Shish",
+      "price": 5,
+      "unit": "skewer"
+    },
+    {
+      "id": 5,
+      "category": "grilled_meats_proteins",
+      "name": "Lamb Shish",
+      "price": 5,
+      "unit": "skewer"
+    },
+    {
+      "id": 6,
+      "category": "grilled_meats_proteins",
+      "name": "Kofte",
+      "price": 5,
+      "unit": "pcs"
+    },
+    {
+      "id": 7,
+      "category": "grilled_meats_proteins",
+      "name": "Falafel",
+      "price": 5,
+      "unit": "pcs"
+    },
+    {
+      "id": 8,
+      "category": "grilled_meats_proteins",
+      "name": "Lamb Chops",
+      "price": 5,
+      "unit": "pcs"
+    },
+    {
+      "id": 9,
+      "category": "grilled_meats_proteins",
+      "name": "Chicken Adana",
+      "price": 5,
+      "unit": "skewer"
+    },
+    {
+      "id": 10,
+      "category": "grilled_meats_proteins",
+      "name": "Beef Adana",
+      "price": 5,
+      "unit": "skewer"
+    },
+    {
+      "id": 11,
+      "category": "grilled_meats_proteins",
+      "name": "Chicken Doner",
+      "price": 5,
+      "unit": "kg"
+    },
+    {
+      "id": 12,
+      "category": "grilled_meats_proteins",
+      "name": "Beef Doner",
+      "price": 5,
+      "unit": "kg"
+    },
+    {
+      "id": 13,
+      "category": "meze_cold_appetizers",
+      "name": "Eggplant Salad",
+      "price": 0.005,
+      "unit": "g"
+    },
+    {
+      "id": 14,
+      "category": "meze_cold_appetizers",
+      "name": "Baba Ganoush",
+      "price": 0.005,
+      "unit": "g"
+    },
+    {
+      "id": 15,
+      "category": "meze_cold_appetizers",
+      "name": "Ezme",
+      "price": 0.005,
+      "unit": "g"
+    },
+    {
+      "id": 16,
+      "category": "meze_cold_appetizers",
+      "name": "Humus",
+      "price": 0.005,
+      "unit": "g"
+    },
+    {
+      "id": 17,
+      "category": "meze_cold_appetizers",
+      "name": "Cacik",
+      "price": 0.005,
+      "unit": "g"
+    },
+    {
+      "id": 18,
+      "category": "meze_cold_appetizers",
+      "name": "Sarma / Dolma",
+      "price": 0.005,
+      "unit": "g"
+    },
+    {
+      "id": 19,
+      "category": "breads_dough",
+      "name": "Bread",
+      "price": 5,
+      "unit": "pcs"
+    },
+    {
+      "id": 20,
+      "category": "breads_dough",
+      "name": "Pide Dough",
+      "price": 5,
+      "unit": "pcs"
+    },
+    {
+      "id": 21,
+      "category": "breads_dough",
+      "name": "Lavash",
+      "price": 5,
+      "unit": "pcs"
+    },
+    {
+      "id": 22,
+      "category": "breads_dough",
+      "name": "Summit Bread",
+      "price": 5,
+      "unit": "pcs"
+    },
+    {
+      "id": 23,
+      "category": "fresh_garnishes_produce",
+      "name": "Lettuce",
+      "price": 0.005,
+      "unit": "g"
+    },
+    {
+      "id": 24,
+      "category": "fresh_garnishes_produce",
+      "name": "Tomato Slices",
+      "price": 0.005,
+      "unit": "g"
+    },
+    {
+      "id": 25,
+      "category": "fresh_garnishes_produce",
+      "name": "Onion Slices",
+      "price": 0.005,
+      "unit": "g"
+    },
+    {
+      "id": 26,
+      "category": "fresh_garnishes_produce",
+      "name": "Pickled Red Cabbage",
+      "price": 0.005,
+      "unit": "g"
+    },
+    {
+      "id": 27,
+      "category": "fresh_garnishes_produce",
+      "name": "Tomato",
+      "price": 0.005,
+      "unit": "g"
+    },
+    {
+      "id": 28,
+      "category": "fresh_garnishes_produce",
+      "name": "Parsley",
+      "price": 0.005,
+      "unit": "g"
+    },
+    {
+      "id": 29,
+      "category": "fresh_garnishes_produce",
+      "name": "Pomegranate Seeds",
+      "price": 0.005,
+      "unit": "g"
+    },
+    {
+      "id": 30,
+      "category": "fresh_garnishes_produce",
+      "name": "Pomegranate (Whole)",
+      "price": 5,
+      "unit": "pcs"
+    },
+    {
+      "id": 31,
+      "category": "sides_grains",
+      "name": "Bulgur",
+      "price": 5,
+      "unit": "kg"
+    },
+    {
+      "id": 32,
+      "category": "sides_grains",
+      "name": "Rice",
+      "price": 5,
+      "unit": "kg"
+    },
+    {
+      "id": 33,
+      "category": "sides_grains",
+      "name": "Fries",
+      "price": 5,
+      "unit": "kg"
+    },
+    {
+      "id": 34,
+      "category": "fruits",
+      "name": "Watermelon",
+      "price": 0.005,
+      "unit": "g"
+    },
+    {
+      "id": 35,
+      "category": "fruits",
+      "name": "Grapes",
+      "price": 0.005,
+      "unit": "g"
+    },
+    {
+      "id": 36,
+      "category": "fruits",
+      "name": "Strawberries",
+      "price": 0.005,
+      "unit": "g"
+    },
+    {
+      "id": 37,
+      "category": "desserts",
+      "name": "Sutlac / Rice Pudding",
+      "price": 0.005,
+      "unit": "g"
+    },
+    {
+      "id": 38,
+      "category": "desserts",
+      "name": "Pistachio Baklava",
+      "price": 5,
+      "unit": "pcs"
+    },
+    {
+      "id": 39,
+      "category": "desserts",
+      "name": "Havuc Baklava",
+      "price": 5,
+      "unit": "pcs"
+    },
+    {
+      "id": 40,
+      "category": "desserts",
+      "name": "Cold Baklava",
+      "price": 5,
+      "unit": "pcs"
+    }
+  ],
+  "waste": [],
+  "nextProductId": 42,
+  "nextWasteId": 2
+}
