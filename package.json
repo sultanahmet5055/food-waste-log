@@ -1,0 +1,12 @@
+{
+  "name": "food-waste-log",
+  "version": "1.0.0",
+  "description": "Food waste logging app with database storage and Netlify functions",
+  "main": "index.html",
+  "scripts": {
+    "start": "netlify dev"
+  },
+  "dependencies": {
+    "sqlite3": "^5.1.6"
+  }
+}

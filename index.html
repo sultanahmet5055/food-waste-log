@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Food Waste Log</title>
+  <style>
+    body { font-family: sans-serif; padding: 20px; background: #f9f9f9; color: #000; }
+    h1, h2 { font-size: 24px; margin-bottom: 10px; }
+    .section { background: #fff; padding: 15px; border-radius: 8px; margin-bottom: 25px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+    form { display: flex; flex-wrap: wrap; gap: 12px; align-items: flex-end; }
+    form label { display: flex; flex-direction: column; min-width: 150px; }
+    table { border-collapse: collapse; width: 100%; margin-top: 10px; overflow-x: auto; display: block; }
+    th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+    th { background: #eee; }
+    input, select, button { padding: 5px; border-radius: 4px; border: 1px solid #ccc; }
+    .btn { padding: 8px 16px; cursor: pointer; margin-top: 5px; border-radius: 4px; }
+    .btn-save { background-color: #28a745; color: white; border: none; }
+    .btn-edit { background-color: #ffc107; color: black; border: none; }
+    .btn-delete { background-color: #dc3545; color: white; border: none; }
+    #reportOutput { white-space: pre-wrap; background: #fff; padding: 10px; border: 1px solid #ccc; margin-top: 20px; }
+    .nav-arrows { margin-bottom: 10px; }
+    .nav-arrows button { margin-right: 5px; padding: 8px; }
+    .download-btn { margin-left: 10px; }
+    .error { color: red; font-size: 14px; }
+    .success { color: green; }
+    #noEntries { color: #888; margin-top: 10px; }
+    button { padding: 8px 16px; }
+    .tabs { display: flex; margin-bottom: 10px; }
+    .tab-btn { background: #eee; border: none; padding: 10px 20px; cursor: pointer; font-size: 16px; }
+    .tab-btn.active { background: #ccc; }
+    .tab-content { display: none; }
+    /* Dark mode */
+    .dark { background: #222; color: #ddd; }
+    .dark .section { background: #333; box-shadow: 0 2px 5px rgba(255,255,255,0.1); }
+    .dark th { background: #444; }
+    .dark td { border-color: #555; }
+    .dark input, .dark select, .dark button { background: #444; color: #ddd; border-color: #555; }
+    .dark #reportOutput { background: #333; border-color: #555; }
+    .dark .tab-btn { background: #444; color: #ddd; }
+    .dark .tab-btn.active { background: #555; }
+    @media (max-width: 600px) {
+      form { flex-direction: column; align-items: stretch; }
+      form label { min-width: 100%; }
+      table { font-size: 14px; }
+    }
+  </style>
+</head>
+<body>
+  <button onclick="toggleTheme()">Toggle Dark Mode</button>
+  <div class="section">
+    <h1>Daily Food Waste Entry</h1>
+    <form id="wasteForm">
+      <label>Date <input type="date" id="wasteDate" required /></label>
+      <label>Category <select id="category" required onchange="updateProductList()">
+        <option value="ALL">ALL</option>
+        <option value="soups">Soups</option>
+        <option value="grilled_meats_proteins">Grilled Meats & Proteins</option>
+        <option value="meze_cold_appetizers">Meze / Cold Appetizers</option>
+        <option value="breads_dough">Breads & Dough</option>
+        <option value="fresh_garnishes_produce">Fresh Garnishes & Produce</option>
+        <option value="sides_grains">Sides & Grains</option>
+        <option value="fruits">Fruits</option>
+        <option value="desserts">Desserts</option>
+      </select></label>
+      <label>Product <select id="productName" required></select></label>
+      <label>Unit <select id="unit" disabled>
+        <option value="kg">kilograms (kg)</option>
+        <option value="g">grams (g)</option>
+        <option value="pcs">pieces (pcs)</option>
+        <option value="skewer">skewers</option>
+      </select></label>
+      <label>Quantity <input type="number" id="quantity" required step="0.001" min="0.001" oninput="calculateValue()" /></label>
+      <label>Value ($) <input type="number" id="value" readonly step="0.01" /></label>
+      <button type="submit" class="btn btn-save">Save Entry</button>
+    </form>
+    <p id="formError" class="error"></p>
+  </div>
+
+  <div class="section">
+    <h2>Product Management</h2>
+    <div class="tabs">
+      <button id="addBtn" class="tab-btn active" onclick="openTab('addUpdate', 'addBtn')">Add or Update Products</button>
+      <button id="manageBtn" class="tab-btn" onclick="openTab('manage', 'manageBtn')">Manage Products</button>
+    </div>
+    <div id="addUpdate" class="tab-content">
+      <form id="addItemForm">
+        <label>Category <select id="newCategory">
+          <option value="soups">Soups</option>
+          <option value="grilled_meats_proteins">Grilled Meats & Proteins</option>
+          <option value="meze_cold_appetizers">Meze / Cold Appetizers</option>
+          <option value="breads_dough">Breads & Dough</option>
+          <option value="fresh_garnishes_produce">Fresh Garnishes & Produce</option>
+          <option value="sides_grains">Sides & Grains</option>
+          <option value="fruits">Fruits</option>
+          <option value="desserts">Desserts</option>
+        </select></label>
+        <label>Product Name <input type="text" id="newProduct" placeholder="Product Name" required /></label>
+        <label>Price per unit ($) <input type="number" id="newPrice" step="0.01" min="0" placeholder="Price per unit ($)" required /></label>
+        <label>Unit <select id="newUnit">
+          <option value="kg">kilograms (kg)</option>
+          <option value="g">grams (g)</option>
+          <option value="pcs">pieces (pcs)</option>
+          <option value="skewer">skewers</option>
+        </select></label>
+        <button type="submit" class="btn btn-save">Save Product</button>
+      </form>
+      <p id="productError" class="error"></p>
+    </div>
+    <div id="manage" class="tab-content">
+      <table id="productTable">
+        <thead>
+          <tr>
+            <th>Category</th>
+            <th>Product</th>
+            <th>Price per unit ($)</th>
+            <th>Unit</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>Waste Log</h2>
+    <div class="nav-arrows">
+      <button onclick="navigateDate(-1)">← Previous</button>
+      <span id="logDateDisplay"></span>
+      <button onclick="navigateDate(1)">Next →</button>
+    </div>
+    <label>Search Type <select id="searchType">
+      <option value="product">Product</option>
+      <option value="category">Category</option>
+      <option value="date">Date</option>
+    </select></label>
+    <input type="text" id="searchBox" placeholder="Search..." oninput="renderTable()" />
+    <table id="wasteTable">
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th>Category</th>
+          <th>Product</th>
+          <th>Quantity</th>
+          <th>Unit</th>
+          <th>Value ($)</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+    <p id="noEntries"></p>
+  </div>
+
+  <div class="section">
+    <h2>Reports</h2>
+    <button onclick="generateReport('currentWeek')">Current Week</button>
+    <button onclick="generateReport('lastWeek')">Last Week</button>
+    <button onclick="generateReport('last30Days')">Last 30 Days</button>
+    <button onclick="generateReport('lastMonth')">Last Month</button>
+    <button onclick="generateReport('thisMonth')">This Month</button>
+    <label>From <input type="date" id="fromDate" /></label>
+    <label>To <input type="date" id="toDate" /></label>
+    <button onclick="generateReport('custom')">Custom Report</button>
+    <button class="download-btn" onclick="downloadReport()">Download Report (CSV)</button>
+    <pre id="reportOutput"></pre>
+  </div>
+
+  <script>
+    // Initialize state
+    const state = {
+      categorizedProducts: {},
+      wasteLogByDate: {}
+    };
+    let editIndex = null;
+    let editEntryId = null;
+    let editProductCategory = null;
+    let editProductName = null;
+    let lastStart = null;
+    let lastEnd = null;
+
+    // Utility functions
+    const getFormattedDate = (date) => date.toISOString().split('T')[0];
+    const sanitizeInput = (input) => {
+      const div = document.createElement('div');
+      div.textContent = input;
+      return div.innerHTML;
+    };
+    const setMessage = (element, message, isSuccess) => {
+      element.textContent = message;
+      if (isSuccess) {
+        element.classList.add('success');
+      } else {
+        element.classList.remove('success');
+      }
+      setTimeout(() => {
+        element.textContent = '';
+        element.classList.remove('success');
+      }, 5000);
+    };
+
+    // Theme toggle
+    function toggleTheme() {
+      document.body.classList.toggle('dark');
+      localStorage.setItem('theme', document.body.classList.contains('dark') ? 'dark' : 'light');
+    }
+    if (localStorage.getItem('theme') === 'dark') {
+      document.body.classList.add('dark');
+    }
+
+    // Tab functionality
+    function openTab(tabId, btnId) {
+      document.querySelectorAll('.tab-content').forEach(content => {
+        content.style.display = 'none';
+      });
+      document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.classList.remove('active');
+      });
+      document.getElementById(tabId).style.display = 'block';
+      document.getElementById(btnId).classList.add('active');
+    }
+
+    // Fetch products from server
+    async function fetchProducts() {
+      try {
+        const res = await fetch('/.netlify/functions/products');
+        if (!res.ok) throw new Error('Failed to load products');
+        const data = await res.json();
+        state.categorizedProducts = data;
+        updateProductList();
+        renderProductTable();
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    // Fetch waste entries for selected date
+    async function fetchWasteEntries(date) {
+      try {
+        const res = await fetch(`/.netlify/functions/waste?date=${date}`);
+        if (!res.ok) throw new Error('Failed to load waste');
+        const data = await res.json();
+        state.wasteLogByDate[date] = data;
+        renderTable();
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    // Update product dropdown based on category
+    function updateProductList() {
+      const category = sanitizeInput(document.getElementById('category').value);
+      const productSelect = document.getElementById('productName');
+      const unitSelect = document.getElementById('unit');
+      productSelect.innerHTML = '<option value="">Select Product</option>';
+      let products = {};
+      if (category === 'ALL') {
+        Object.keys(state.categorizedProducts).forEach(cat => {
+          Object.assign(products, state.categorizedProducts[cat]);
+        });
+      } else {
+        products = state.categorizedProducts[category] || {};
+      }
+      Object.keys(products).forEach(product => {
+        const option = document.createElement('option');
+        option.value = product;
+        option.textContent = product;
+        productSelect.appendChild(option);
+      });
+      const selectedProduct = productSelect.value;
+      if (selectedProduct && products[selectedProduct]) {
+        unitSelect.value = products[selectedProduct].unit;
+        unitSelect.disabled = true;
+        calculateValue();
+      } else {
+        unitSelect.disabled = false;
+      }
+    }
+
+    // Calculate value based on quantity and unit
+    function calculateValue() {
+      const category = sanitizeInput(document.getElementById('category').value);
+      const product = sanitizeInput(document.getElementById('productName').value);
+      const quantity = parseFloat(document.getElementById('quantity').value) || 0;
+      const unit = document.getElementById('unit').value;
+      const valueInput = document.getElementById('value');
+      let productData;
+      if (category === 'ALL') {
+        Object.values(state.categorizedProducts).some(cat => {
+          if (cat[product]) {
+            productData = cat[product];
+            return true;
+          }
+          return false;
+        });
+      } else {
+        productData = state.categorizedProducts[category]?.[product];
+      }
+      if (!productData) {
+        valueInput.value = '';
+        return;
+      }
+      const price = productData.price;
+      const calcValue = quantity * price;
+      valueInput.value = calcValue.toFixed(2);
+    }
+
+    // Render Waste log table
+    function renderTable() {
+      const tbody = document.querySelector('#wasteTable tbody');
+      const selectedDate = sanitizeInput(document.getElementById('wasteDate').value);
+      const search = sanitizeInput(document.getElementById('searchBox').value.toLowerCase());
+      const searchType = document.getElementById('searchType').value.toLowerCase();
+      tbody.innerHTML = '';
+      const entries = state.wasteLogByDate[selectedDate] || [];
+      let visibleCount = 0;
+      entries.forEach((entry, index) => {
+        let matches = true;
+        if (search) {
+          if (searchType === 'product' && !entry.product.toLowerCase().includes(search)) matches = false;
+          if (searchType === 'category' && !entry.category.toLowerCase().includes(search)) matches = false;
+          if (searchType === 'date' && !entry.date.includes(search)) matches = false;
+        }
+        if (!matches) return;
+        visibleCount++;
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td>${entry.date}</td>
+          <td>${entry.category}</td>
+          <td>${entry.product}</td>
+          <td>${entry.quantity}</td>
+          <td>${entry.unit}</td>
+          <td>${entry.value}</td>
+          <td>
+            <button class="btn btn-edit" onclick="editEntry('${selectedDate}', ${index})">Edit</button>
+            <button class="btn btn-delete" onclick="deleteEntry('${selectedDate}', ${index})">Delete</button>
+          </td>
+        `;
+        tbody.appendChild(row);
+      });
+      document.getElementById('noEntries').textContent = visibleCount === 0 ? 'No entries for this date' : '';
+    }
+
+    // Edit an entry
+    function editEntry(date, index) {
+      const entry = state.wasteLogByDate[date][index];
+      document.getElementById('wasteDate').value = entry.date;
+      document.getElementById('category').value = entry.category;
+      updateProductList();
+      document.getElementById('productName').value = entry.product;
+      document.getElementById('unit').value = entry.unit;
+      document.getElementById('quantity').value = entry.quantity;
+      document.getElementById('value').value = entry.value;
+      editIndex = index;
+      editEntryId = entry.id;
+      setMessage(document.getElementById('formError'), 'Editing entry. Save to update.', true);
+    }
+
+    // Delete an entry
+    async function deleteEntry(date, index) {
+      const entry = state.wasteLogByDate[date][index];
+      if (confirm('Are you sure you want to delete this entry?')) {
+        try {
+          const res = await fetch(`/.netlify/functions/waste?id=${entry.id}`, { method: 'DELETE' });
+          if (!res.ok) throw new Error('Failed to delete');
+          state.wasteLogByDate[date].splice(index, 1);
+          if (state.wasteLogByDate[date].length === 0) delete state.wasteLogByDate[date];
+          renderTable();
+        } catch (err) {
+          console.error(err);
+        }
+      }
+    }
+
+    // Navigate date
+    function navigateDate(offset) {
+      const dateInput = document.getElementById('wasteDate');
+      const current = new Date(dateInput.value);
+      current.setDate(current.getDate() + offset);
+      dateInput.value = getFormattedDate(current);
+      document.getElementById('logDateDisplay').textContent = current.toDateString();
+      fetchWasteEntries(dateInput.value);
+    }
+
+    // Handle Waste form submission
+    document.getElementById('wasteForm').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      const date = sanitizeInput(document.getElementById('wasteDate').value);
+      let category = sanitizeInput(document.getElementById('category').value);
+      const product = sanitizeInput(document.getElementById('productName').value);
+      const quantity = parseFloat(document.getElementById('quantity').value);
+      const unit = document.getElementById('unit').value;
+      const value = parseFloat(document.getElementById('value').value);
+      if (new Date(date) > new Date('2025-07-11') && !confirm('Are you logging future waste?')) {
+        return;
+      }
+      // Determine actual category when ALL is selected
+      let actualCategory = category;
+      if (category === 'ALL') {
+        actualCategory = getProductCategory(product);
+        if (!actualCategory) {
+          setMessage(document.getElementById('formError'), 'Product not found in any category', false);
+          return;
+        }
+      }
+      if (quantity <= 0 || isNaN(value)) {
+        setMessage(document.getElementById('formError'), 'Invalid quantity or value', false);
+        return;
+      }
+      const entry = {
+        date,
+        category: actualCategory,
+        product,
+        quantity: quantity.toFixed(3),
+        unit,
+        value: value.toFixed(2)
+      };
+      // Save or update entry via API
+      try {
+        let method = 'POST';
+        let url = '/.netlify/functions/waste';
+        if (editEntryId) {
+          entry.id = editEntryId;
+        }
+        const res = await fetch(url, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(entry)
+        });
+        if (!res.ok) {
+          const errText = await res.text();
+          throw new Error(errText || 'Failed to save entry');
+        }
+        const saved = await res.json();
+        // Refresh local state
+        await fetchWasteEntries(date);
+        editEntryId = null;
+        setMessage(document.getElementById('formError'), saved.message || 'Entry saved successfully', true);
+        e.target.reset();
+        const currentToday = new Date('2025-07-11');
+        document.getElementById('wasteDate').value = getFormattedDate(currentToday);
+        document.getElementById('logDateDisplay').textContent = currentToday.toDateString();
+        document.getElementById('category').value = 'ALL';
+        updateProductList();
+      } catch (err) {
+        console.error(err);
+        setMessage(document.getElementById('formError'), err.message, false);
+      }
+    });
+
+    // Find the category of a product
+    function getProductCategory(product) {
+      for (const category in state.categorizedProducts) {
+        if (state.categorizedProducts[category][product]) {
+          return category;
+        }
+      }
+      return null;
+    }
+
+    // Handle product form submission
+    document.getElementById('addItemForm').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      const category = sanitizeInput(document.getElementById('newCategory').value);
+      const name = sanitizeInput(document.getElementById('newProduct').value.trim());
+      const price = parseFloat(document.getElementById('newPrice').value);
+      const unit = document.getElementById('newUnit').value;
+      if (!name || isNaN(price) || price < 0) {
+        setMessage(document.getElementById('productError'), 'Invalid product name or price', false);
+        return;
+      }
+      try {
+        const body = {
+          category,
+          name,
+          price,
+          unit
+        };
+        // If editing product, include old identifiers
+        if (editProductName) {
+          body.oldCategory = editProductCategory;
+          body.oldName = editProductName;
+        }
+        const res = await fetch('/.netlify/functions/products', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body)
+        });
+        if (!res.ok) {
+          const errText = await res.text();
+          throw new Error(errText || 'Failed to save product');
+        }
+        const saved = await res.json();
+        setMessage(document.getElementById('productError'), saved.message || 'Product saved successfully', true);
+        editProductCategory = null;
+        editProductName = null;
+        document.getElementById('addItemForm').querySelector('button').textContent = 'Save Product';
+        e.target.reset();
+        fetchProducts();
+      } catch (err) {
+        console.error(err);
+        setMessage(document.getElementById('productError'), err.message, false);
+      }
+    });
+
+    // Render product table
+    function renderProductTable() {
+      const tbody = document.querySelector('#productTable tbody');
+      tbody.innerHTML = '';
+      Object.keys(state.categorizedProducts).forEach(category => {
+        Object.keys(state.categorizedProducts[category]).forEach(product => {
+          const row = document.createElement('tr');
+          row.innerHTML = `
+            <td>${category}</td>
+            <td>${product}</td>
+            <td>${state.categorizedProducts[category][product].price}</td>
+            <td>${state.categorizedProducts[category][product].unit}</td>
+            <td>
+              <button class="btn btn-edit" onclick="editProduct('${category}', '${product}')">Edit</button>
+              <button class="btn btn-delete" onclick="deleteProduct('${category}', '${product}')">Delete</button>
+            </td>
+          `;
+          tbody.appendChild(row);
+        });
+      });
+    }
+
+    // Edit product
+    function editProduct(category, product) {
+      document.getElementById('newCategory').value = category;
+      document.getElementById('newProduct').value = product;
+      document.getElementById('newPrice').value = state.categorizedProducts[category][product].price;
+      document.getElementById('newUnit').value = state.categorizedProducts[category][product].unit;
+      document.getElementById('addItemForm').querySelector('button').textContent = 'Update Product';
+      editProductCategory = category;
+      editProductName = product;
+      openTab('addUpdate', 'addBtn');
+    }
+
+    // Delete product
+    async function deleteProduct(category, product) {
+      if (confirm('Are you sure you want to delete this product? Existing entries will remain unaffected.')) {
+        try {
+          const res = await fetch(`/.netlify/functions/products?category=${encodeURIComponent(category)}&name=${encodeURIComponent(product)}`, { method: 'DELETE' });
+          if (!res.ok) throw new Error('Failed to delete product');
+          const data = await res.json();
+          setMessage(document.getElementById('productError'), data.message || 'Product deleted', true);
+          fetchProducts();
+        } catch (err) {
+          console.error(err);
+          setMessage(document.getElementById('productError'), err.message, false);
+        }
+      }
+    }
+
+    // Generate report
+    async function generateReport(type) {
+      const now = new Date('2025-07-11');
+      let start, end;
+      if (type === 'currentWeek') {
+        start = new Date(now);
+        start.setDate(now.getDate() - now.getDay());
+        end = new Date(start);
+        end.setDate(start.getDate() + 6);
+      } else if (type === 'lastWeek') {
+        start = new Date(now);
+        start.setDate(now.getDate() - now.getDay() - 7);
+        end = new Date(start);
+        end.setDate(start.getDate() + 6);
+      } else if (type === 'last30Days') {
+        start = new Date(now);
+        start.setDate(now.getDate() - 30);
+        end = now;
+      } else if (type === 'lastMonth') {
+        start = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+        end = new Date(now.getFullYear(), now.getMonth(), 0);
+      } else if (type === 'thisMonth') {
+        start = new Date(now.getFullYear(), now.getMonth(), 1);
+        end = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+      } else if (type === 'custom') {
+        const from = document.getElementById('fromDate').value;
+        const to = document.getElementById('toDate').value;
+        if (!from || !to) {
+          alert('Please select from and to dates for custom report.');
+          return;
+        }
+        start = new Date(from);
+        end = new Date(to);
+      }
+      end.setHours(23, 59, 59, 999);
+      lastStart = start;
+      lastEnd = end;
+      const startDate = getFormattedDate(start);
+      const endDate = getFormattedDate(end);
+      try {
+        const res = await fetch(`/.netlify/functions/report?start=${startDate}&end=${endDate}`);
+        if (!res.ok) throw new Error('Failed to generate report');
+        const data = await res.json();
+        // Build report text
+        const reportTitle = type.replace(/([A-Z])/g, ' $1').trim().toUpperCase();
+        let report = `${reportTitle} REPORT (${startDate} to ${endDate})\n\n`;
+        report += 'By Product:\n';
+        Object.keys(data.byProduct).forEach(product => {
+          report += `${product}: $${data.byProduct[product].toFixed(2)}\n`;
+        });
+        report += '\nBy Category:\n';
+        Object.keys(data.byCategory).forEach(category => {
+          report += `${category}: $${data.byCategory[category].toFixed(2)}\n`;
+        });
+        report += `\nTOTAL: $${data.total.toFixed(2)}`;
+        document.getElementById('reportOutput').textContent = report;
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    // Download report as CSV
+    async function downloadReport() {
+      let startDate, endDate;
+      if (lastStart && lastEnd) {
+        startDate = getFormattedDate(lastStart);
+        endDate = getFormattedDate(lastEnd);
+      }
+      try {
+        const url = startDate && endDate ? `/.netlify/functions/report?start=${startDate}&end=${endDate}&format=csv` : `/.netlify/functions/report?format=csv`;
+        const res = await fetch(url);
+        if (!res.ok) throw new Error('Failed to download report');
+        const blob = await res.blob();
+        const downloadUrl = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = downloadUrl;
+        a.download = 'waste_report.csv';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    // Initialize page
+    (function init() {
+      const today = new Date('2025-07-11');
+      document.getElementById('wasteDate').value = getFormattedDate(today);
+      document.getElementById('logDateDisplay').textContent = today.toDateString();
+      document.getElementById('category').value = 'ALL';
+      // Initially hide all tabs
+      document.querySelectorAll('.tab-content').forEach(content => content.style.display = 'none');
+      openTab('addUpdate', 'addBtn');
+      fetchProducts();
+      fetchWasteEntries(getFormattedDate(today));
+    })();
+  </script>
+</body>
+</html>
